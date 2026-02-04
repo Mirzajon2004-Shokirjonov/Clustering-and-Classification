@@ -1,0 +1,701 @@
+---
+title: "Final Project"
+author: "Mirzajon Shokirjonov"
+date: "2026-01-11"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## 1.Kirish:
+**Mavzuning dolzarbligi:**Sun’iy intellekt (AI) bugungi kunda global iqtisodiyotning asosiy drayverlaridan(engine desak ham bo'ladi) biri hisoblanadi. Mamlakatlar AI sohasidagi talent, infratuzilma, ilmiy tadqiqotlar, investitsiya va hukumat strategiyasi ko‘rsatkichlari bo‘yicha  rivojlanmoqda. Shu kontekstdan kelib chiqib, mamlakatlarning AI imkoniyatlarini tahlil qilish va ularni guruhlash (profilash) iqtisodiy strategiya, siyosat va global raqobatni tushunish uchun muhimdir.Chunki, profillash uning global raqobatdagi o'rini ko'rsatib beradi.
+
+**BMI bilan bog‘liqligi:** Ushbu loyiha  bitiruv malakaviy ishi (BMI) mavzusi bilan bevosita bog‘liq bo‘lib, AI sohasidagi mamlakatlar profillari va ularning rivojlanish darajasi iqtisodiy tadqiqotning strategik jihatlarini aniqlashga xizmat qiladi. BMI doirasida amalga oshiriladigan keyingi tadqiqotlar uchun bu loyiha metodologik asos bo‘lib xizmat qiladi.
+
+**Tadqiqot maqsadi:** Loyihaning asosiy maqsadi — AI Global Index ko‘rsatkichlariga asoslanib mamlakatlarni profilash va kelajakda ularni predict qiluvchi model yaratish, shuningdek, AI imkoniyatlari bilan iqtisodiy va siyosiy farqlarni tahlil qilish.
+
+**Tadqiqot vazifalari:**
+1.AI Global Index ma’lumotlar to‘plamini tahlil qilish, tozalash va transformatsiya qilish.
+2.Mamlakatlarni AI ko‘rsatkichlariga asoslanib K-means klasterlash yordamida guruhlash.
+3.Klaster natijalarini tasdiqlash va vizualizatsiya qilish.
+4.Klasterlarni supervised learning (Random Forest classifier) yordamida bashorat qilish modeli qurish.
+5.Modellarning natijalarini iqtisodiy kontekstda talqin qilish va amaliy tavsiyalar berish.
+**Tadqiqot obyekti:** 62 ta mamlakatning sun’iy intellekt sohasidagi rivojlanish darajasi (AI Global Index) tanlangan.
+
+**Tadqiqot predmeti — ** AI Global Indexni tashkil etuvchi indikatorlar: Talent, Infrastructure, Operating Environment, Research, Development, Government Strategy va Commercial.
+
+##2.Ma’lumotlar tavsifi
+**2.1 Ma’lumotlar manbalari**Loyihada ishlatilgan ma’lumotlar AI Global Index 2023 dan olingan bo‘lib, 62 ta mamlakatni qamrab oladi. Ma’lumotlar ochiq va rasmiy manbalardan yig‘ilgan Tortoise Media tomonidan.Tortoise Media o'zining "Global AI Index" (Global SI Indeksi) uchun ma'lumotlarni juda ko'p qirrali va ishonchli manbalardan yig'adi. Ular umumiy hisobda 28 dan ortiq turli xil ma'lumotlar bazasiga tayanadi.Ularga World Bank, IMF, OECD va boshqa rasmiy statistika manbalari. Ushbu dataset esa kaggle da berilgan bo'lib.
+source: https://www.kaggle.com/datasets/katerynameleshenko/ai-index/data
+Tortoise media rasmiy manbaalar bilan ishlashiga dalil:
+https://www.tortoisemedia.com/_app/immutable/assets/AI-Methodology-2409.BGTLUPC-.pdf
+**O‘zgaruvchilarning tavsifi**
+1. Joriy etish (Implementation) guruh ko'rsatkichlari
+Iste'dod, Infratuzilma va Operatsion muhit – sun'iy intellektni joriy etish guruhining omillari hisoblanadi. Ushbu guruh sun'iy intellektning biznes, hukumat va jamiyat kabi turli sohalarda mutaxassislar tomonidan amalda qo'llanilishini ifodalaydi.
+
+Iste'dod (Talent): Sun'iy intellekt yechimlarini yaratish va taqdim etish uchun malakali mutaxassislarning mavjudligiga e'tibor qaratadi.
+
+Infratuzilma (Infrastructure): Elektr energiyasi va internetdan tortib, superkompyuter imkoniyatlarigacha bo'lgan texnik bazaning ishonchliligi va ko'lamini baholaydi.
+
+Operatsion muhit (Operating Environment): Sun'iy intellekt sohasidagi qonunchilik (tartibga solish) konteksti va ushbu texnologiya atrofidagi jamoatchilik fikriga e'tibor qaratadi.
+
+2. Innovatsiya (Innovation) guruh ko'rsatkichlari
+Tadqiqot va Ishlanmalar – innovatsiya guruhi omillari bo'lib, ular texnologiya va metodologiya sohasidagi yutuqlarni aks ettiradi. Bu esa sun'iy intellektning rivojlanish va takomillashish salohiyatini anglatadi.
+
+Tadqiqot (Research): Ixtisoslashtirilgan ilmiy tadqiqotlar va tadqiqotchilar ko'lamiga e'tibor qaratadi; bunda nufuzli akademik jurnallardagi maqolalar va ularga berilgan iqtiboslar soni o'rganiladi.
+
+Ishlanmalar (Development): Innovatsion SI loyihalari tayanadigan fundamental platformalar va algoritmlarni ishlab chiqish jarayoniga e'tibor qaratadi.
+
+3. Investitsiya (Investment) guruh ko'rsatkichlari
+Hukumat strategiyasi va Tijorat – investitsiya guruhining omillari bo'lib, ular sun'iy intellektni rivojlantirish bo'yicha moliyaviy va protsessual majburiyatlarni aks ettiradi.
+
+Hukumat strategiyasi (Government Strategy): Milliy hukumatning sun'iy intellektga bo'lgan e'tibor darajasini baholaydi; bunda byudjet xarajatlari va qabul qilingan milliy strategiyalar tahlil qilinadi.
+
+Tijorat (Commercial): Sun'iy intellektga asoslangan startaplar faolligi, investitsiyalar va biznes tashabbuslari darajasiga e'tibor qaratadi.
+
+
+**2.2 Tavsiflovchi statistika va vizualizatsiya**
+Kerakli kutubxonalar:
+```{r}
+library(dplyr)
+library(ggplot2)
+library(GGally)
+```
+ Datasetni yuklash:
+```{r}
+ai_data <- read.csv("AI_index_db.csv")
+```
+
+
+```{r}
+str(ai_data)
+```
+Tanlangan datasetda 13 ta o'zgaruvchi mavjud  bo'lib 62 ta kuzatishga ega ( 62 ta mamlakat bilan)
+
+Asosiy statistik ko'rsatkichlar
+```{r}
+
+summary(ai_data[, c("Talent","Infrastructure","Operating.Environment",
+                    "Research","Development","Government.Strategy","Commercial","Total.score")])
+```
+**Xulosa:**Talent Median : 13.445 va Max.   :100.000 o'rtasida farq katta - bu shuni anglatadiki malakali mutaxassislarning mavjudligi o'rtasida katta farqalar mavjud; Infrastructure,Government.Strategy va Operating.Environment o'zgaruvchilari bir biriga yaqin ya'ni ushbu sohalar bo'yicha barcha  mamlakatlarda o'zgarishlar amalga oshirilmoqda; Research,Commercial ,Total.score va Development bo'yicha ham mallakatlar o'rtasida farqlar katta
+
+Histogramlar: har bir o'zgaruvchi uchun
+```{r}
+library(ggplot2)
+
+# columnlar ro'yxati
+numeric_vars <- c("Talent", "Infrastructure", "Operating.Environment",
+                  "Research", "Development", "Government.Strategy", 
+                  "Commercial", "Total.score")
+
+#   har bir ko'rsatkich uchun gistogramma chizish uchun for loopdan foydalanildi:
+for (var in numeric_vars) {
+  p <- ggplot(ai_data, aes(x = .data[[var]])) +
+    geom_histogram(fill = "steelblue", color = "white", bins = 15) +
+    labs(title = paste("Distribution of", var),
+         x = var,
+         y = "Count (Countries)") +
+    theme_minimal() +
+    theme(plot.title = element_text(hjust = 0.5, face = "bold"))
+  
+  print(p)
+}
+```
+```{r}
+# Skewness va kurtosis uchun
+library(moments)
+
+# Skewness va Kurtosisni bitta jadvalga yig'ish
+stats_summary <- data.frame(
+  Variable = numeric_vars,
+  Skewness = sapply(ai_data[numeric_vars], skewness),
+  Kurtosis = sapply(ai_data[numeric_vars], kurtosis)
+)
+
+print(stats_summary)
+```
+**Xulosa:**Taqsimot bo'yicha -Deyarli har taqsimotda og'ish bor bu ese skewness ga sabab bo'ladi.
+
+
+Bizga grafiklardan ko'rinib turibdiki-
+Commercial va Talent – Keskin tengsizlik
+Commercial (Skewness: 5.32, Kurtosis: 34.33): Bu jadvaldagi va grafiklardagi eng ekstremal ko'rsatkich.
+ 5.32 lik asimmetriya tijoriy SI loyihalari va investitsiyalar deyarli bir nechta davlat (masalan, AQSH va Xitoy) qo'lida to'planganini anglatadi.Kurtosis (34.33) esa o'ta yuqori bo'lib, bu sohada  outlier davlatlar o'rtacha ko'rsatkichdan anchagina o'zib ketganini ko'rsatadi.
+Talent, Research, Development: Bu ko'rsatkichlarda ham asimmetriya ijobiy (2.2 dan yuqori). Ya'ni, yuqori malakali kadrlar va ilmiy salohiyat ham sanoqli davlatlarda to'plangan.
+Infrastructure (Skewness: -1.04) va Operating Environment (Skewness: -0.88): Bu yerda biz manfiy asimmetriyani ko'rmoqdamiz.Manfiy asimmetriya ko'pchilik davlatlarning bu borada yuqori ball olganini anglatadi. Ya'ni, dunyoning aksariyat davlatlari SI uchun zarur infratuzilmani (internet, elektr) yaratishga va qonuniy bazani shakllantirishga ulgurgan va   juda kam sonli davlatlargina infratuzilma borasida jiddiy ortda qolmoqda.
+
+Government Strategy: Skewness: -0.58, Kurtosis: 2.28:Bu ko'rsatkich eng yaxshi taqsimotga ega. Kurtosis 3 dan past bo'lgani uchun taqsimot yassi . Bu shuni anglatadiki, deyarli barcha davlatlar o'zlarining SI strategiyalariga ega
+
+Quyidagi boxplotlar orqali haqqiqatdan ham bizda outlier borligini ko'rishimiz mumkin:
+```{r}
+library(dplyr)
+library(tidyr)
+
+ai_long <- ai_data %>%
+  pivot_longer(cols = all_of(numeric_vars),
+               names_to = "Variable",
+               values_to = "Value")
+
+ggplot(ai_long, aes(x = Variable, y = Value)) +
+  geom_boxplot(fill = "lightblue") +
+  stat_summary(fun = median, geom = "text",
+               aes(label = round(..y.., 1)),
+               hjust = -0.3, size = 3) +
+  coord_flip() +
+  theme_minimal() +
+  labs(
+    title = "Boxplots of AI Indicators with Median Values",
+    x = "",
+    y = "Score"
+  )
+
+
+```
+**Xulosa:** Agar Commercialga qaraydigan bo'lsak SI loyihalari va investitsiyalar deyarli bir nechta davlat (masalan, AQSH va Xitoy) qo'lida to'planganini ko'rishimiz mumkin.
+
+ 
+Ular orasidagi bog'liqliklarni quyida ko'rishimiz mumkin:
+```{r}
+library(ggplot2)
+library(reshape2)
+
+numeric_vars <- c("Talent","Infrastructure","Operating.Environment",
+                  "Research","Development","Government.Strategy",
+                  "Commercial","Total.score")
+
+# Correlation matrix
+cor_matrix <- cor(ai_data[, numeric_vars], use = "complete.obs")
+
+# Melt
+cor_melted <- melt(cor_matrix)
+
+# Heatmap with values
+ggplot(cor_melted, aes(Var1, Var2, fill = value)) +
+  geom_tile(color = "white") +
+  geom_text(aes(label = round(value, 2)), size = 3) +
+  scale_fill_gradient2(
+    low = "blue", mid = "white", high = "red",
+    midpoint = 0, limit = c(-1, 1)
+  ) +
+  theme_minimal() +
+  theme(
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    axis.title = element_blank()
+  ) +
+  labs(
+    title = "Correlation Heatmap of AI Indicators",
+    fill = "Correlation"
+  )
+cor_matrix
+
+```
+**Xulosa** AI Asosi –  Research & Development
+Eng yuqori bog'liqlik Research va Total Score o'rtasida kuzatildi (0.945).Research (ilmiy nashrlar va iqtiboslar) mamlakatning umumiy AI salohiyatini belgilovchi eng asosiy omildir.
+
+Shu joyiga ahamiyat berishimiz kerakki:Research va Commercial (0.847) o'rtasidagi kuchli bog'liqlik shuni ko'rsatadiki, ilmiy yutuqlar to'g'ridan-to'g'ri tijoriy muvaffaqiyatga (startaplar va investitsiyalar) aylanmoqda.
+
+Shuningdek eng e'tiborli jihat sifatida:Talent – Research (0.81);Talent – Commercial(0.79);Research – Commercial (0.84)
+Bu AI ekotizimining zanjirli reaksiyasidir: Malakali mutaxassislar (Talent) ilmiy kashfiyotlar (Research) qiladi, bu esa o'z navbatida biznes loyihalarni (Commercial) yuzaga keltiradi. Birini rivojlantirmasdan turib, boshqasiga erishish qiyin.
+ Infrastructure: Infrastructure va Total Score o'rtasida yaxshi bog'liqlik bor (0.71), lekin uning Commercial (0.38) va Talent (0.46) bilan bog'liqligi ancha past.
+Kuchli internet va superkompyuterlar bo'lishi hali mamlakatda AI biznesi gullab-yashnashini yoki iste'dodlar yopirilib kelishini kafolatlamaydi.
+
+Operating Environment (qonunchilik va jamoatchilik fikri) deyarli barcha ko'rsatkichlar bilan eng past korrelyatsiyaga ega (masalan, Commercial bilan atigi 0.11).
+E'tiborli tomoni! Demak, mamlakatda AI bo'yicha qat'iy qonunlar borligi yoki jamiyatning bunga munosabati hozircha real AI innovatsiyalariga yoki tijoriy o'sishga sezilarli ta'sir ko'rsatmayapti. Innovatsiya ko'pincha tartibga solishdan ko'ra tezroq harakat qilmoqda.
+
+
+##3. Tadqiqot metodologiyasi
+Mazkur tadqiqotda iqtisodiyotda katta ma’lumotlar tahlili usullaridan foydalangan holda davlatlarning sun’iy intellekt (AI) rivojlanish darajasi va tarkibiy xususiyatlarini aniqlash maqsad qilingan. Tadqiqot ikki bosqichli analitik yondashuv asosida amalga oshirildi:
+Unsupervised learning — davlatlarni o‘xshash AI rivojlanish profillariga ko‘ra guruhlash;
+Supervised learning — hosil bo‘lgan guruhlarni tushuntiruvchi va bashorat qiluvchi model qurish.
+Klaster tahlili (K-means)-Davlatlarni AI rivojlanish darajasi bo‘yicha segmentlash uchun K-means klasterlash usuli tanlandi. Ushbu usul:katta hajmdagi ko‘p o‘lchovli ma’lumotlar bilan samarali ishlaydi;klaster markazlari orqali har bir guruhning o‘rtacha profilini aniqlash imkonini beradi;iqtisodiy guruhlash va davlatlar taqqoslash tadqiqotlarida keng qo‘llaniladi.
+Klasterlar sonini tanlash
+ Bu tanlov:iqtisodiy mantiqqa mos kelishi;klaster ichidagi dispersiyaning minimal bo‘lishi;klasterlar o‘rtasidagi farqlarning maksimal bo‘lishi asosida amalga oshiriladi.
+
+Klassifikatsiya modeli (Random Forest)- Klasterlash natijasida olingan Cluster o‘zgaruvchisi keyingi bosqichda bog‘liq (dependent) o‘zgaruvchi sifatida ishlatildi. Klaster a’zoligini bashorat qilish va tushuntirish uchun Random Forest klassifikatsiya modeli tanlandi.
+
+Metodologik yondashuvning BMI bilan bog‘liqligi -Mazkur metodologiya bitiruv malakaviy ishida:davlatlarning AI rivojlanish darajasini aniqlash;AI salohiyatiga ta’sir etuvchi asosiy omillarni baholash;iqtisodiy siyosat va strategik rejalashtirish uchun tavsiyalar ishlab chiqish uchun asos yaratadi.Klasterlash orqali aniqlangan davlat profillari va klassifikatsiya modeli BMI doirasida regressiya  ma’lumotlar tahliliga o‘tish uchun boshlang‘ich nuqta vazifasini bajaradi.
+
+##4.Amaliy qism (R muhitida hisob-kitoblar)
+Kerakli paketlarni yuklash:
+```{r}
+library(tidyverse)
+library(cluster)
+library(factoextra)
+library(randomForest)
+library(corrplot)
+library(ggplot2)
+library(caret)
+```
+
+Datasetni yuklash:
+```{r}
+ai_data <- read.csv("AI_index_db.csv")
+```
+
+Tanlangan dataset strukrurasi:
+```{r}
+str(ai_data)
+```
+ushbu datasetda 8 ta numerical va 5 ta Kategik o'zgaruvchi berilgan
+
+Datasetda bo'sh(Nan) qiymatlarni tekshirish:
+```{r}
+colSums(is.na(ai_data))
+```
+Undan ko'rinib turibdiki dataset toza va analiz uchun yaroqli
+
+**Klaster tahlili: K-means**
+Mazkur bosqichning maqsadi — mamlakatlarni sun’iy intellekt rivojlanish ko‘rsatkichlariga asoslanib o‘xshash profillarga ega guruhlarga ajratish. Klasterlash natijasida:
+AI rivojlanish bosqichlari aniqlanadi;
+mamlakatlar o‘rtasidagi tarkibiy farqlar ochib beriladi;
+keyingi klassifikatsiya modeli uchun target (Cluster) yaratiladi.
+
+Klasterlash uchun ma’lumotlarni tayyorlash:Faqat miqdoriy AI indikatorlar tanlab olinadi.
+```{r}
+cluster_data <- ai_data %>%
+  select(
+    Talent,
+    Infrastructure,
+    Operating.Environment,
+    Research,
+    Development,
+    Government.Strategy,
+    Commercial
+  )
+```
+
+
+Standartlashtirish (z-score)-Orada katta farqlar bo'lsa yoki unbalanced ekanligini olidni olish maqsadida:
+```{r} 
+cluster_scaled <- scale(cluster_data)
+```
+Datasetda Davlatlar soni u qadar ko'p bo'lmagani uchun K_max=10 sifatida kiritdik
+ 
+
+```{r}
+library(factoextra)
+
+fviz_nbclust(cluster_scaled, kmeans, method = "wss")
+fviz_nbclust(cluster_scaled, kmeans, method = "silhouette")
+fviz_nbclust(cluster_scaled, kmeans, method = "gap_stat")
+
+```
+Natijalar tahlil qiladigan bo'lsak Elbow metod k=3 yoki k=4 biz uchun opotimal klaster lar soni bo'lishi mumkin.
+Silhouetteni ko'radigan bo'lsak k=3 va gap stat esa optimal sifatida k=1 ni ko'rsatdi
+Endi biz k uchun 3 va 4 ni sinab ko'ramiz va eng optimal klasterlar sonini aniqlaymiz.
+
+**K=3 bo'lganda**
+```{r}
+cluster_scaled
+```
+
+
+```{r}
+set.seed(123)
+
+k3 <- kmeans(
+  cluster_scaled,
+  centers = 3,
+  nstart = 25,
+  iter.max = 100
+)
+
+# === NATIJALAR ===
+k3$size                    # klaster hajmlari
+k3$centers                 # klaster markazlari
+k3$tot.withinss            # umumiy WSS
+k3$betweenss / k3$totss    # ajralish sifati (%)
+k3
+```
+K=3 uchun xulosa :
+between_SS / total_SS = 53.8%: Ushbu ko'rsatkich model ma'lumotlardagi variatsiyaning yarmini (53.8%) klasterlar orqali tushuntirib bera olishini anglatadi.
+3 ta klaster uchun bu ko'rsatkich o'rtacha hisoblanadi, biroq 2-klasterdagi 2 ta davlatning o'ta yuqori ballari umumiy dispersiyaning katta qismini o'ziga tortib ketganini ko'rish mumkin.
+
+SI bo'yicha dunyo davlatlarining guruhlanish(PCA klasterizatsiyasi tahlili):
+```{r}
+pca <- prcomp(cluster_scaled, scale. = FALSE)
+df_k3 <- as.data.frame(cluster_scaled)
+df_k3$cluster <- factor(k3$cluster)
+
+fviz_pca_ind(
+  pca,
+  col.ind = df_k3$cluster,
+  palette = "jco",
+  addEllipses = TRUE,
+  ellipse.type = "convex",
+  legend.title = "Cluster (k = 3)"
+)
+
+```
+
+ 
+Xulosa: Ko'rinib turibdiki 2- o'rinda turgan davlat(China) AQSh dan ko'ra qolgan davlatlarga qo'shilgani optimalroq bo'lar edi
+ 
+
+**K=4** bo'lgandagi natijalar
+```{r}
+set.seed(123)
+
+k4 <- kmeans(
+  cluster_scaled,
+  centers = 4,
+  nstart = 25,
+  iter.max = 100
+)
+
+# === NATIJALAR ===
+k4$size
+k4$centers
+k4$tot.withinss
+k4$betweenss / k4$totss
+
+```
+
+
+```{r}
+df_k4 <- as.data.frame(cluster_scaled)
+df_k4$cluster <- factor(k4$cluster)
+
+fviz_pca_ind(
+  pca,
+  col.ind = df_k4$cluster,
+  palette = "jco",
+  addEllipses = TRUE,
+  ellipse.type = "convex",
+  legend.title = "Cluster (k = 4)"
+)
+
+```
+
+Xulosa:klasterlash natijalari k=4 (between_SS / total_SS = 63.4%) shuni ko'rsatadiki, bu model k=3 (53.8%) ga qaraganda ma'lumotlardagi farqlarni ancha aniqroq tushuntirib beradi.
+
+Demak, biz berilgan natijlarni hisobga olgan holda k=4 ni tanlaymiz 
+```{r}
+k4
+```
+ 
+##KLASTERLARNI PROFILLASH
+Klaster markazlari standartlashtirilgan (z-score) ko‘rsatkichlar asosida hisoblangan.
+0 dan yuqori → o‘rtachadan yuqori
+0 dan past → o‘rtachadan past
+
+1-klaster (27 ta mamlakat):“Emerging / Developing AI Adopters”
+
+Profil:
+Talent: -0.38 ↓
+Infrastructure: ≈ 0
+Operating Environment: +0.49 ↑
+Research & Development: past
+Government Strategy: +0.23
+Commercialization: -0.28
+Talqin: Ushbu klaster mamlakatlarida AI rivoji boshlang‘ich–o‘rta bosqichda. Rasmiy muhit va davlat siyosati nisbatan shakllangan, biroq ilmiy-tadqiqot salohiyati va tijoratlashtirish yetarli darajada rivojlanmagan.
+
+2-klaster (1 ta mamlakat)
+“Global AI Leader / Outlier”
+
+Profil:
+Talent: +5.47 
+Infrastructure: +1.51
+Research: +4.79
+Development: +4.39
+Commercial: +6.69 
+Government Strategy: +0.74
+Talqin:Bu klaster mutlaq yetakchi mamlakatni ifodalaydi. Barcha AI komponentlari bo‘yicha o‘rtacha darajadan keskin yuqori natijalar qayd etilgan.
+
+3-klaster (13 ta mamlakat)
+ “Lagging / Low AI Readiness Economies”
+
+Profil:
+Talent: -0.71
+Infrastructure: -1.26
+Operating Environment: -1.20
+Research: -0.80
+Development: -0.65
+Government Strategy: -1.19
+Talqin:Ushbu mamlakatlarda AI rivoji deyarli barcha yo‘nalishlarda o‘rtachadan past. Raqamli infratuzilma, institutsional muhit va davlat strategiyasi yetarli darajada shakllanmagan.
+
+4-klaster (21 ta mamlakat)
+“Rising / Catching-up AI Economies”
+
+Profil:
+Talent: +0.67
+Infrastructure: +0.72
+Research & Development: +0.75
+Government Strategy: +0.40
+Commercial: +0.27
+Talqin:Bu klaster AI rivojida faol o‘sib borayotgan mamlakatlarni ifodalaydi. Deyarli barcha komponentlar bo‘yicha ijobiy natijalar mavjud.
+
+Cluster uchun map:
+```{r}
+cluster_labels <- c(
+  "Emerging AI Adopters",     # Cluster 1
+  "Global AI Leader",         # Cluster 2 (outlier)
+  "Low AI Readiness",         # Cluster 3
+  "Rising AI Economies"       # Cluster 4
+)
+
+```
+
+Ro'yxat sifatida chiqarish : Davlat , Klaster nomi
+```{r}
+ai_data$cluster_k4 <- k4$cluster
+
+ai_data$cluster_name <- factor(
+  ai_data$cluster_k4,
+  levels = 1:4,
+  labels = cluster_labels
+)
+
+```
+
+```{r}
+ai_data
+```
+
+
+```{r}
+cluster_membership <- ai_data %>%
+  select(Country, cluster_k4, cluster_name) %>%
+  arrange(cluster_k4)
+
+print(cluster_membership)
+
+```
+Bu qanday ishlaydi masalan:USA -Global AI Leader Ai sohasida va AI Index bo'yicha; China esa Rising AI Economies ; Pakistan Low AI Readiness davlatlar sirasiga kiradi
+
+```{r}
+cluster_membership %>%
+  group_by(cluster_name) %>%
+  summarise(
+    Countries = paste(Country, collapse = ", "),
+    Count = n()
+  )
+
+```
+ K-means klasterlash natijalariga ko‘ra, har bir mamlakat sun’iy intellekt rivojlanish darajasi bo‘yicha to‘rtta klasterga ajratildi. Klasterlar mantiqiy ravishda “Emerging AI Adopters”, “Global AI Leader”, “Low AI Readiness” va “Rising AI Economies” deb nomlandi. Ushbu yondashuv mamlakatlar o‘rtasidagi texnologik va institutsional farqlarni aniqlash hamda keyingi klassifikatsiya bosqichi uchun asos yaratadi.
+
+## CLASSIFICATION BOSQICHI
+Maqsad- Mamlakatlarga oid xususiyatlarni kiritish orqali uning aynan qaysi class kirishini bilish uchun- bu R shiny Orqai ham tanlsaa bo'ladi
+Target (Y):cluster_name
+Predictorlar (X):
+Talent
+Infrastructure
+Operating.Environment
+Research
+Development
+Government.Strategy
+Commercial
+
+Kerakli paketlar
+```{r}
+library(dplyr)
+library(caret)
+library(randomForest)
+```
+
+ Target (Y) ni belgilash
+```{r}
+ai_data$cluster_Y <- as.factor(ai_data$cluster_k4)
+```
+
+
+2. Classification uchun dataset tayyorlash
+```{r}
+classification_data <- ai_data %>%
+  select(
+    Talent,
+    Infrastructure,
+    Operating.Environment,
+    Research,
+    Development,
+    Government.Strategy,
+    Commercial,
+    cluster_Y
+  ) %>%
+  na.omit()
+```
+ 
+
+
+ 
+Ma'lumotlarni train va test to'plamlariga ajratish (80/20)
+```{r}
+set.seed(123)
+trainIndex <- createDataPartition(classification_data$cluster_Y, p = 0.8, list = FALSE)
+train_data <- classification_data[trainIndex, ]
+test_data <- classification_data[-trainIndex, ]
+```
+Random Forest modelini qurish
+```{r}
+rf_model <- randomForest(
+  cluster_Y ~ Talent + Infrastructure + Operating.Environment + 
+    Research + Development + Government.Strategy + Commercial,
+  data = train_data,
+  ntree = 500,
+  mtry = sqrt(7),
+  importance = TRUE,
+  proximity = TRUE
+)
+```
+
+Model haqida ma'lumot
+```{r}
+print(rf_model)
+```
+Model haqida xulosa:Modelning umumiy ishonchliligi
+OOB (Out-of-Bag) error rate: 13.73%. Bu modelning kutilmagan (yangi) ma'lumotlarni bashorat qilish aniqligi 86.27% ekanligini anglatadi. Sun'iy intellekt kabi murakkab ijtimoiy-iqtisodiy ko'rsatkichlar uchun bu juda yuqori va ishonchli natija hisoblanadi.
+
+ntree = 500: 500 ta qaror daraxti modelning barqarorligini ta'minlagan.
+
+Confusion Matrix tahlili:
+Matritsa model qaysi klasterlarni aniqlashda qiynalayotganini ko'rsatadi:
+4-klaster (Eng aniq): Class error atigi 5.8%. Model ushbu guruhga kiruvchi davlatlarni deyarli xatosiz aniqlamoqda.
+1 va 3-klasterlar: Xatolik darajasi 13.6% va 18.1% atrofida. Bu guruhlar o'rtasida biroz o'xshashlik bor, shuning uchun model ba'zan ularni bir-biri bilan adashtirmoqda (masalan, 3-klasterdagi 2 ta davlatni 1-klasterga kiritgan).
+2-klaster (Muammoli): Xatolik 100%. Buning sababi ushbu klasterda ma'lumot juda kam (atigi 1 ta davlat o'qitishda qatnashgan). Random Forest statistik jihatdan juda kichik guruhlarni (outliers) taniy olmaydi.--Bizda faqat Amerika outlier bo'lgani uchun 
+
+Variable Importance):
+Research va Commercial ko'rsatkichlari davlatlarni guruhlarga ajratishda eng yuqori "Weight" (vazn) ga ega bo'lishi kutiladi.
+Operating Environment esa klasterlarni ajratishda eng kam ta'sir qiluvchi omil bo'lishi mumkin (chunki korrelyatsiya tahlilida ham u eng zaif edi).
+
+Bashorat qilish
+```{r}
+predictions <- predict(rf_model, test_data)
+```
+
+Confusion Matrix
+```{r}
+conf_matrix <- confusionMatrix(predictions, test_data$cluster_Y)
+print(conf_matrix)
+```
+Modelning Bashorat Aniqligi (High Accuracy)
+Umumiy aniqlik (Accuracy): 90.91%. Bu juda ajoyib ko'rsatkich! Model deyarli barcha davlatlarni o'z klasteriga to'g'ri joylashtira olgan.(Faqat outlerdan tashqari)
+Kappa koeffitsiyenti: 0.86. Statistik tilda bu Almost Perfect Agreement deyiladi. Ya'ni, model klasterlarni shunchaki tasodifan emas, balki aniq qonuniyatlar asosida topgan.
+2. Klasterlar kesimida tahlil (Sensitivity & Specificity)
+4-klaster (Rising AI Economies): Model ushbu klasterni 100% aniqlik (Sensitivity = 1.0) bilan topmoqda. Bu shuni ko'rsatadiki, rivojlanayotgan kuchli iqtisodiyotlarning SI profili juda o'ziga xos va aniq.
+
+1-klaster (Emerging AI Adopters): Aniqlik biroz pastroq (80%), chunki model ushbu guruhdagi ayrim davlatlarni 3-klaster (Low AI Readiness) bilan adashtirgan. Bu ikki guruh o'rtasidagi chegara biroz xiraligini anglatadi.
+
+2-klaster (Global AI Leader): OOB natijasida xatolik 100% ko'ringan bo'lsa-da, bu faqatgina ma'lumot kamligidan (AQSH kabi davlatlar bittaligi). Real hayotda model bu klasterni ajratishda qiynalmaydi, chunki uning ko'rsatkichlari (Research, Commercial) ekstremal darajada yuqori.
+
+3. O'zgaruvchilarning Ahamiyati (Feature Importance)
+Modelda Research, Commercial va Development ustunlari klasterlarni bir-biridan ajratishda asosiy rol o'ynagan.
+
+Agar davlatda Research > 3.0 va Commercial > 5.0 bo'lsa, model uni avtomatik ravishda yuqori klasterlarga joylashtiradi.
+
+Infrastructure va Government Strategy ko'proq pastki klasterlarni (1 va 3) bir-biridan ajratishda xizmat qiladi.
+
+
+
+
+O'zgaruvchilarning muhimligi
+```{r}
+importance <- importance(rf_model)
+print(importance)
+```
+BUndan aniqki Eng muhim omillar: Infratuzilma va Tadqiqot
+Eng kam ta'sir qiluvchi omillar: Strategiya va Tijorat
+Yanada aniqroq ko'rinishi uchun quyidagi grafikdan foydalandik:
+
+Variable Importance grafiklari
+```{r}
+par(mfrow = c(1, 2))
+varImpPlot(rf_model, main = "Variable Importance")
+```
+
+Importance data frame
+```{r}
+importance_df <- data.frame(
+  Variable = rownames(importance),
+  MeanDecreaseAccuracy = importance[, "MeanDecreaseAccuracy"],
+  MeanDecreaseGini = importance[, "MeanDecreaseGini"]
+)
+importance_df <- importance_df[order(-importance_df$MeanDecreaseAccuracy), ]
+```
+ggplot bilan importance grafigi:
+```{r}
+ggplot(importance_df, aes(x = reorder(Variable, MeanDecreaseAccuracy), 
+                          y = MeanDecreaseAccuracy)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  coord_flip() +
+  labs(title = "Variable Importance (Mean Decrease Accuracy)",
+       x = "Variables", y = "Mean Decrease Accuracy") +
+  theme_minimal()
+```
+OOB Error Rate grafigi: Treelar soni n ta bo'lganda xatolik foizalari:
+```{r}
+plot(rf_model, main = "OOB Error Rate by Number of Trees")
+legend("topright", colnames(rf_model$err.rate), col = 1:ncol(rf_model$err.rate), 
+       lty = 1:ncol(rf_model$err.rate))
+```
+ 
+Natijalarni ko'rish
+```{r}
+results <- data.frame(
+  Actual = test_data$cluster_Y,
+  Predicted = predictions,
+  Correct = test_data$cluster_Y == predictions
+)
+```
+
+Xato qilingan bashoratlar
+```{r}
+errors <- results[results$Correct == FALSE, ]
+print(paste("  Xato bashoratlar soni:", nrow(errors), "ta"))
+print(paste("To'g'ri bashoratlar soni:", sum(results$Correct), "ta"))
+```
+Modelimiz juda ham aniqlikda ishlamoqda: Xato bashoratlar soni: 1 ta";  "To'g'ri bashoratlar soni: 10 ta
+
+Train va test to'plamlari haqida ma'lumot:Qanday ajralganii ko'rish mumkin
+```{r}
+cat("\nMa'lumotlar haqida:\n")
+cat("Umumiy qatorlar:", nrow(classification_data), "\n")
+cat("Train to'plami:", nrow(train_data), "qator (", round(nrow(train_data)/nrow(classification_data)*100, 1), "%)\n")
+cat("Test to'plami:", nrow(test_data), "qator (", round(nrow(test_data)/nrow(classification_data)*100, 1), "%)\n")
+```
+
+ 
+##Umumiy Xulosa:
+Olingan natijalarning iqtisodiy talqini
+Tahlillarimiz shuni ko‘rsatadiki, dunyo SI bo‘yicha shunchaki "rivojlangan" va "rivojlanayotgan"ga emas, balki to‘rt qatlamli vertikal iyerarxiyaga ajralgan:
+
+Global Yetakchilik (Cluster 2 - AQSH): Bu guruh iqtisodiy "monopoliya" bosqichida. Bu yerda SI shunchaki texnologiya emas, balki asosiy eksport va iqtisodiy o‘sish drayveridir. Commercial va Research ko‘rsatkichlarining o‘ta yuqoriligi SI kapitalini shakllantirganidan dalolat beradi.
+
+Texnologik Raqobatchilar (Cluster 4 - Xitoy, Buyuk Britaniya va b.): Bu davlatlar "kuchli o‘rtachalar" bo‘lib, ular asosan Infrastructure va Talent hisobiga o‘sishmoqda. Iqtisodiy nuqtayi nazardan, ular yetakchiga yetib olish uchun "miqyos iqtisodi" (economies of scale) dan foydalanmoqda.
+
+Strategik Iste’molchilar (Cluster 1): Bu guruhda (ko‘plab rivojlanayotgan davlatlar) Government Strategy bor, lekin Infrastructure va Commercial yetishmaydi. Iqtisodiy talqin: davlatlar siyosiy iroda ko‘rsatmoqda, biroq real sektorda SIning qaytimi (ROI) hali sezilarsiz.
+
+Raqamli Izolyatsiya (Cluster 3): Bu davlatlar SI inqilobdan chetda qolgan. Ularda bazaviy raqamli infratuzilma yo‘qligi sababli, global texnologik zanjirlarga qo‘shilish imkoniyati past.
+
+BIz Tuzgan R shiny orqali siz o'z xulosalaringizga ega bo'lishingiz mumkin 
+**BMI uchun muhim xulosalar:**
+
+Infratuzilma — SI iqtisodiyotining poydevori: Random Forest natijalari ko‘rsatganidek, Infrastructure eng yuqori ahamiyatga (MeanDecreaseAccuracy = 19.38) ega. Bu degani, qanchalik ko‘p iste’dod (Talent) bo‘lmasin, texnik baza (serverlar, 5G, bulutli texnologiyalar) bo‘lmasa, iqtisodiy sakrash sodir bo‘lmaydi.
+
+Strategiya va natija o‘rtasidagi uzilish: Tahlilda Government Strategy eng past ahamiyatga ega bo‘lib chiqdi. Bu iqtisodiy paradoks: deyarli barcha davlatlarda SI strategiyasi bor, lekin u avtomatik ravishda klaster darajasini oshirmaydi. BMI uchun xulosa: "Qog‘ozdagi strategiyadan — amaliy infratuzilmaga o‘tish davr talabi va asos bo'lib ximat qiluvchi kuchidir".
+
+Sun'iy intellekt iqtisodiyotida Commercial (Tijoriylashtirish) ko'rsatkichi — bu nazariy bilimlarning real pulga va ijtimoiy nafjga aylanish nuqtasidir.Tadqiqotni tijoratga bog‘lash:Asosiy success kalitidir
+
+Tadqiqot va Commercial sinergiyasi(birlashmasini nazrda tutganaman): PCA natijalarida Research va Commercial o‘zgaruvchilari bir yo‘nalishda kuchli korrelyatsiyaga ega. Bu fan va biznesning integratsiyalashganini ko‘rsatadi. SI iqtisodiyotida ilmiy kashfiyot darhol tijorat mahsulotiga aylanishi shart.
+
+**BMI uchun amaliy tavsiyalar**
+Tadqiqotmning  "Takliflar" qismiga quyidagi amaliy qadamlarni kiritishni xohlayman:
+
+A. Rivojlanayotgan davlatlar (masalan, O‘zbekiston kabi 1-klaster vakillari) uchun:
+Infratuzilma investitsiyalarini ustuvorlashtirish: Strategiya yozishdan ko‘ra, ma’lumotlarni qayta ishlash markazlari (Data Centers) va yuqori tezlikdagi internetni subsidiyalash samaraliroq."Talent Hub" yaratish: Random Forestda Talent yuqori vaznga ega. Mahalliy mutaxassislarni autsorsing emas, balki mahsulot yaratishga (Research & Development) yo‘naltirish kerak.
+B. Klaster darajasini oshirish (Transition Strategy) uchun:
+Akademik va biznes kooperatsiyasi: Oliy ta’limdagi tadqiqotlarni (Research) xususiy sektor ehtiyojlariga moslashtirish (Commercial).Lokal model yaratish: Global modellardan (masalan, ChatGPT) shunchaki foydalanuvchi emas, balki lokal ma’lumotlar asosida iqtisodiyotning drayver sohalari (qishloq xo‘jaligi, energetika) uchun maxsus SI modellarini ishlab chiqish.
+C. Siyosat ishlab chiquvchilar uchun:
+Monitoring tizimi: Klaster tahlili shuni ko‘rsatadiki, davlatlar o‘z o‘rnini yo‘qotib qo‘yishi oson. Har chorakda Random Forest modeli yordamida "zaif nuqtalar" (masalan, Operating Environment pasayishi)ni nazorat qilib borish lozim.
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+
